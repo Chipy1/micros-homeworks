@@ -1,0 +1,6 @@
+# Kibana connect to Elasticsearch
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://es:9200"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "qwerty123456"
+logging.root.level: info

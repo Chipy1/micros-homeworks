@@ -1,0 +1,29 @@
+# Stack "Мониторинг" (задача 5) — Prometheus + Grafana
+# Подключается к сети, в которой уже работает API Gateway из solution/02
+# (название сети зафиксировано в solution/02/docker-compose.yaml).
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: qwerty123456
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./configs/grafana/provisioning/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "8081:3000"
+
+networks:
+  default:
+    name: microservices_default

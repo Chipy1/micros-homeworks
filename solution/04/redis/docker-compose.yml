@@ -1,0 +1,110 @@
+x-redis-common: &redis-common
+  image: redis:7.2.4
+  restart: unless-stopped
+  command: >
+    redis-server
+    --port 6379
+    --cluster-enabled yes
+    --cluster-config-file nodes.conf
+    --cluster-node-timeout 5000
+    --appendonly yes
+    --appendfilename appendonly.aof
+    --save 900 1
+    --save 300 10
+    --save 60 10000
+    --dir /data
+
+services:
+  # ============ Shard 1 ============
+  redis-master-01:
+    <<: *redis-common
+    container_name: "redis-master-01"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "7001:6379"
+    volumes:
+      - redis-master-01:/data
+      - ./init-cluster.sh:/usr/local/bin/init-cluster.sh:ro
+
+  redis-replica-01:
+    <<: *redis-common
+    container_name: "redis-replica-01"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "7004:6379"
+    volumes:
+      - redis-replica-01:/data
+
+  # ============ Shard 2 ============
+  redis-master-02:
+    <<: *redis-common
+    container_name: "redis-master-02"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "7002:6379"
+    volumes:
+      - redis-master-02:/data
+
+  redis-replica-02:
+    <<: *redis-common
+    container_name: "redis-replica-02"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "7005:6379"
+    volumes:
+      - redis-replica-02:/data
+
+  # ============ Shard 3 ============
+  redis-master-03:
+    <<: *redis-common
+    container_name: "redis-master-03"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "7003:6379"
+    volumes:
+      - redis-master-03:/data
+
+  redis-replica-03:
+    <<: *redis-common
+    container_name: "redis-replica-03"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "7006:6379"
+    volumes:
+      - redis-replica-03:/data
+
+networks:
+  default:
+    name: redis-cluster-net
+
+volumes:
+  redis-master-01:
+  redis-master-02:
+  redis-master-03:
+  redis-replica-01:
+  redis-replica-02:
+  redis-replica-03:

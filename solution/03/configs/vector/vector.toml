@@ -1,0 +1,29 @@
+data_dir = "/var/lib/vector"
+
+[sources.docker]
+type = "docker_logs"
+include_labels = ["logging=vector"]
+
+[transforms.clean_labels]
+type = "remap"
+inputs = ["docker"]
+source = '''
+del(.label)
+'''
+
+[sinks.stdout]
+type = "console"
+inputs = ["clean_labels"]
+encoding.codec = "json"
+
+[sinks.elasticsearch]
+type = "elasticsearch"
+inputs = ["clean_labels"]
+endpoints = ["http://es:9200"]
+bulk.index = "logs-%Y.%m.%d"
+auth.strategy = "basic"
+auth.user = "elastic"
+auth.password = "${ES_PASSWORD:-qwerty123456}"
+
+[sinks.elasticsearch.healthcheck]
+enabled = false
